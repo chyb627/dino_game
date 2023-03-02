@@ -5,7 +5,7 @@ canvas.width = window.innerWidth - 100;
 canvas.height = window.innerHeight - 100;
 
 var img2 = new Image();
-img2.src = 'dino.png';
+img2.src = './images/dino.png';
 
 var dino = {
     x : 10,
@@ -13,13 +13,13 @@ var dino = {
     width : 50,
     height : 50,
     draw(){
-        ctx.fillStyle = 'green';
+        ctx.fillStyle = 'white';
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.drawImage(img2, this.x, this.y)
     }
 }
 var img1 = new Image();
-img1.src = 'cactus.png';
+img1.src = './images/cactus.png';
 
 class Cactus {
     constructor(){
@@ -29,7 +29,7 @@ class Cactus {
         this.height = 50;
     }
     draw(){
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = 'white';
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.drawImage(img1, this.x, this.y)
     }
