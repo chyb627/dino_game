@@ -103,14 +103,15 @@ function frameLoop() {
 }
 
 function checkCollision(dino, cactus) {
+    const buffer = 10; // 충돌 범위 완화
+
     return (
-        dino.x < cactus.x + cactus.width &&
-        dino.x + dino.width > cactus.x &&
-        dino.y < cactus.y + cactus.height &&
-        dino.y + dino.height > cactus.y
+        dino.x + buffer < cactus.x + cactus.width - buffer &&
+        dino.x + dino.width - buffer > cactus.x + buffer &&
+        dino.y + buffer < cactus.y + cactus.height - buffer &&
+        dino.y + dino.height - buffer > cactus.y + buffer
     );
 }
-
 function gameOver() {
     isGameOver = true;
     cancelAnimationFrame(animation);
