@@ -1,106 +1,140 @@
-var canvas = document.getElementById('canvas')
-var ctx = canvas.getContext('2d');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
 canvas.width = window.innerWidth - 100;
-canvas.height = window.innerHeight - 100;
+canvas.height = 300;
 
-var img2 = new Image();
-img2.src = './images/dino.png';
+const dinoImg = new Image();
+dinoImg.src = './images/dino.png';
 
-var dino = {
-    x : 10,
-    y : 200,
-    width : 50,
-    height : 50,
-    draw(){
-        ctx.fillStyle = 'white';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        ctx.drawImage(img2, this.x, this.y)
+const cactusImg = new Image();
+cactusImg.src = './images/cactus.png';
+
+let gravity = 0.5;
+let jumpPower = 12;
+let gameSpeed = 3;
+let score = 0;
+let isGameOver = false;
+
+const dino = {
+    x: 50,
+    y: 200,
+    width: 50,
+    height: 50,
+    vy: 0,
+    jumping: false,
+    draw() {
+        ctx.drawImage(dinoImg, this.x, this.y, this.width, this.height);
+    },
+    update() {
+        if (this.jumping) {
+            this.vy -= gravity;
+            this.y -= this.vy;
+        } else {
+            if (this.y < 200) {
+                this.vy -= gravity;
+                this.y -= this.vy;
+            } else {
+                this.y = 200;
+                this.vy = 0;
+            }
+        }
     }
-}
-var img1 = new Image();
-img1.src = './images/cactus.png';
+};
 
 class Cactus {
-    constructor(){
-        this.x = 500;
+    constructor() {
+        this.x = canvas.width;
         this.y = 200;
         this.width = 50;
         this.height = 50;
     }
-    draw(){
-        ctx.fillStyle = 'white';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        ctx.drawImage(img1, this.x, this.y)
+    draw() {
+        ctx.drawImage(cactusImg, this.x, this.y, this.width, this.height);
+    }
+    update() {
+        this.x -= gameSpeed;
+        this.draw();
     }
 }
-var cactus = new Cactus();
-cactus.draw()
 
-var timer = 0;
-var cactus여러개 = [];
-var 점프timer = 0;
-var animation;
+const cactuses = [];
+let timer = 0;
+let animation;
 
-function 프레임마다실행할거(){
-    animation = requestAnimationFrame(프레임마다실행할거);
+function frameLoop() {
+    animation = requestAnimationFrame(frameLoop);
     timer++;
-    
-    ctx.clearRect(0,0, canvas.width, canvas.height);
 
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (timer % 200 ===0){
-    var cactus = new Cactus();
-    cactus여러개.push(cactus);    
+    // 배경 바닥 그리기
+    ctx.fillStyle = "#ccc";
+    ctx.fillRect(0, 250, canvas.width, 2);
+
+    // 점수 표시
+    ctx.fillStyle = 'black';
+    ctx.font = '20px Arial';
+    ctx.fillText(`Score: ${score}`, canvas.width - 150, 30);
+
+    // 난이도 증가
+    if (timer % 1000 === 0) {
+        gameSpeed += 0.5;
     }
-    
-    cactus여러개.forEach((a,i,o)=>{
-        // x좌표가 0미만이면 제거
-        if(a.x<0){
-            o.splice(i,1)
+
+    if (timer % 120 === 0) {
+        cactuses.push(new Cactus());
+        score += 10;
+    }
+
+    cactuses.forEach((cactus, i, arr) => {
+        if (cactus.x + cactus.width < 0) {
+            arr.splice(i, 1);
         }
-        a.x--;
+        cactus.update();
 
-        충돌하냐(dino, a);
-
-        a.draw();
+        if (checkCollision(dino, cactus)) {
+            gameOver();
+        }
     });
 
-    if (점프중 == true){
-        dino.y --;
-        점프timer++;
-    }
-    
-    if (점프중 == false){
-        if (dino.y <200)
-        dino.y++;
-    }
-
-    if (점프timer >100){
-        점프중 = false;
-        점프timer = 0
-    }
-
-    dino.draw()
+    dino.update();
+    dino.draw();
 }
 
-프레임마다실행할거();
-
-//충돌확인
-
-function 충돌하냐(dino, cactus){
-    var x축차이 = cactus.x - (dino.x + dino.width);
-    var y축차이 = cactus.y - (dino.y + dino.height);
-    if (x축차이 < 0 && y축차이 < 0){
-        ctx.clearRect(0,0, canvas.width, canvas.height);
-        cancelAnimationFrame(animation)
-    }
+function checkCollision(dino, cactus) {
+    return (
+        dino.x < cactus.x + cactus.width &&
+        dino.x + dino.width > cactus.x &&
+        dino.y < cactus.y + cactus.height &&
+        dino.y + dino.height > cactus.y
+    );
 }
 
+function gameOver() {
+    isGameOver = true;
+    cancelAnimationFrame(animation);
+    ctx.fillStyle = 'red';
+    ctx.font = '40px Arial';
+    ctx.fillText("Game Over", canvas.width / 2 - 100, canvas.height / 2);
+    ctx.font = '20px Arial';
+    ctx.fillText("Press R to Restart", canvas.width / 2 - 80, canvas.height / 2 + 40);
+}
 
-var 점프중 = false;
-document.addEventListener('keydown', function(e){
-    if (e.code === 'Space'){
-        점프중 = true;
+document.addEventListener('keydown', function (e) {
+    if (e.code === 'Space' && !dino.jumping && dino.y >= 200) {
+        dino.jumping = true;
+        dino.vy = jumpPower;
     }
-})
+    if (e.code === 'KeyR' && isGameOver) {
+        location.reload();
+    }
+});
+
+document.addEventListener('keyup', function (e) {
+    if (e.code === 'Space') {
+        dino.jumping = false;
+    }
+});
+
+frameLoop();
